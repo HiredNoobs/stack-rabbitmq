@@ -1,0 +1,2 @@
+# stack-rabbitmq
+RabbitMQ stack.
