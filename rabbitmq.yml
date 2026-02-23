@@ -4,8 +4,8 @@ services:
     image: $RABBITMQ_IMAGE
     ports:
       - mode: host
-        published: $RABBITMQ_BROKER_PORT
-        target: $RABBITMQ_BROKER_PORT
+        published: $RABBITMQ_BROKER_TLS_PORT
+        target: $RABBITMQ_BROKER_TLS_PORT
         protocol: tcp
       - mode: host
         published: $RABBITMQ_MANAGEMENT_PORT
