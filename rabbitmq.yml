@@ -35,7 +35,7 @@ services:
           - node.labels.${STACK}_broker == 1
 
 configs:
-  rabbitmq:
+  rabbitmq_conf:
     file: ${CONFIGS}/rabbitmq.conf
 
 secrets:
