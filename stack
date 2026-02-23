@@ -59,7 +59,8 @@ function stack_env {
   echo "BROKER NODES       = ($BROKER_REPLICAS)"
   list "$BROKER_NODES"
   echo
-  echo "BROKER TLS PORT    = $RABBITMQ_TLS_PORT"
+  echo "BROKER TLS PORT    = $RABBITMQ_BROKER_TLS_PORT"
+  echo "MANAGEMENT PORT    = $RABBITMQ_MANAGEMENT_PORT"
   echo
 }
 
