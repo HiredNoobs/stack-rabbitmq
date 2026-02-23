@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+# Usage: make-user <user> <hostname1> [hostname2 ...]
+
+USER="$1"
+shift
+HOSTS=$@
+
+make-keystore "$USER" $HOSTS -o "$SECRETS"

@@ -1,0 +1,50 @@
+services:
+  broker:
+    hostname: broker{{.Task.Slot}}
+    image: $RABBITMQ_IMAGE
+    ports:
+      - mode: host
+        published: $RABBITMQ_BROKER_PORT
+        target: $RABBITMQ_BROKER_PORT
+        protocol: tcp
+      - mode: host
+        published: $RABBITMQ_MANAGEMENT_PORT
+        target: $RABBITMQ_MANAGEMENT_PORT
+        protocol: tcp
+    configs:
+      - source: rabbitmq_conf
+        target: /etc/rabbitmq/rabbitmq.conf
+    secrets:
+      - source: rabbitmq_ca
+        target: /etc/rabbitmq/tls/ca.crt
+      - source: rabbitmq_crt
+        target: /etc/rabbitmq/tls/rabbitmq.crt
+      - source: rabbitmq_key
+        target: /etc/rabbitmq/tls/rabbitmq.key
+    volumes:
+      - rabbitmq_broker_data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: $RABBITMQ_DEFAULT_USER
+      RABBITMQ_DEFAULT_PASS: $RABBITMQ_DEFAULT_PASS
+    deploy:
+      mode: replicated
+      replicas: $BROKER_REPLICAS
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.${STACK}_broker == 1
+
+configs:
+  rabbitmq:
+    file: ${CONFIGS}/rabbitmq.conf
+
+secrets:
+  rabbitmq_ca:
+    file: ${SECRETS}/ca.crt
+  rabbitmq_crt:
+    file: ${SECRETS}/rabbitmq.crt
+  rabbitmq_key:
+    file: ${SECRETS}/rabbitmq.key
+
+volumes:
+  rabbitmq_broker_data

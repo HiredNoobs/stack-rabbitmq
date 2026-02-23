@@ -1,2 +1,3 @@
 # stack-rabbitmq
+
 RabbitMQ stack.

@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+# -----------------------------------------------------
+# Helper functions
+# -----------------------------------------------------
+
+function build_secrets {
+  if [[ ! -f "$SECRETS/ca.crt" || ! -f "$SECRETS/ca.key" ]]; then
+    make-ca rabbitmq -o "$SECRETS"
+    make-truststore rabbitmq "$SECRETS/ca.crt" -o "$SECRETS"
+  fi
+  
+  if [[ ! -f "$SECRETS/rabbitmq.crt" || ! -f "$SECRETS/rabbitmq.key" ]]; then
+    make-cert rabbitmq "$BROKER_NODES $BROKER_FQDN_NODES" -o "$SECRETS" --ca-crt "$SECRETS/ca.crt" --ca-key "$SECRETS/ca.key"
+  fi
+}
+
+function check_stack_context {
+  if [[ -z "${RABBITMQ_DEFAULT_USER:-}" || -z "${RABBITMQ_DEFAULT_PASS:-}" ]]; then
+    log_error "RabbitMQ default credentials missing from 'secrets.env'."
+    exit 1
+  fi
+}
+
+
+# -----------------------------------------------------
+# Stack functions
+# -----------------------------------------------------
+
+function stack_check_env {
+  if [[ ! -d "$CONFIGS" || ! -d "$SECRETS" ]]; then
+    log_error "Secrets directory is missing from '$ENVIRONMENT_BASE'."
+    exit 1
+  fi
+}
+
+function stack_discover {
+  export BROKER_REPLICAS=$(count "$BROKER_NODES")
+}
+
+function stack_tools {
+  local tool="$STACK_PATH/tools/$1"
+  shift
+
+  if [[ ! -x "$tool" ]]; then
+    log_error "$tool doesn't exist or isn't executable."
+    exit 1
+  fi
+
+  build_env
+
+  log_info "Running $tool with args: $*"
+  "$tool" "$@"
+}
+
+function stack_env {
+  echo
+  echo "DOCKER IMAGE       = $RABBITMQ_IMAGE"
+  echo "BROKER NODES       = ($BROKER_REPLICAS)"
+  list "$BROKER_NODES"
+  echo
+  echo "BROKER TLS PORT    = $RABBITMQ_TLS_PORT"
+  echo
+}
+
+function stack_deploy {
+  check_stack_context
+  build_secrets
+  docker stack deploy --detach=true -c rabbitmq.yml "$STACK"
+}
