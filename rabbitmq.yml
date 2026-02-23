@@ -47,4 +47,4 @@ secrets:
     file: ${SECRETS}/rabbitmq.key
 
 volumes:
-  rabbitmq_broker_data
+  rabbitmq_broker_data:
