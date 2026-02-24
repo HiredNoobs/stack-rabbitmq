@@ -35,7 +35,7 @@ function stack_check_env {
 }
 
 function stack_discover {
-  export BROKER=$(first "$BROKER_FQND_NODES")  # For tooling
+  export BROKER=$(first "$BROKER_FQDN_NODES")  # For tooling
   export BROKER_REPLICAS=$(count "$BROKER_NODES")
 }
 
