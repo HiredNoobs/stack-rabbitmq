@@ -17,10 +17,10 @@ else
   source "$SECRETS/$USER-secrets.env"
 fi
 
-CONTAINER_ID=$(docker -H "ssh://$BROKER" ps --filter name=rsyslog_core_rsyslog --filter status=running -q)
+CONTAINER_ID=$(docker -H "ssh://$BROKER" ps --filter "name=${STACK}_broker" --filter status=running -q)
 
 if ! docker -H "ssh://$BROKER" exec "$CONTAINER_ID" rabbitmqctl list_users | grep -q "^$USER\s"; then
-  docker -H "ssh://$BROKER" exec $CONTAINER_ID rabbitmqctl add_user "$USER" "$RABBITMQ_PASSWORD"
+  docker -H "ssh://$BROKER" exec "$CONTAINER_ID" rabbitmqctl add_user "$USER" "$RABBITMQ_PASSWORD"
 fi
 
-docker -H "ssh://$BROKER" exec $CONTAINER_ID rabbitmqctl set_permissions -p / "$USER" ".*" ".*" ".*"
+docker -H "ssh://$BROKER" exec "$CONTAINER_ID" rabbitmqctl set_permissions -p / "$USER" ".*" ".*" ".*"
