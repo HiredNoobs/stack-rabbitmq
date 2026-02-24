@@ -2,8 +2,25 @@
 #
 # Usage: make-user <user> <hostname1> [hostname2 ...]
 
+source "$TOOLS_BIN/lib/logging.sh"
+
 USER="$1"
 shift
 HOSTS=$@
 
 make-keystore "$USER" $HOSTS -o "$SECRETS"
+
+if [ ! -f "$SECRETS/$USER-secrets.env" ]; then
+  RABBITMQ_PASSWORD=$(openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c 32)
+  echo "export RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD" > "$SECRETS/$USER-secrets.env"
+else
+  source "$SECRETS/$USER-secrets.env"
+fi
+
+CONTAINER_ID=$(docker -H "ssh://$BROKER" ps --filter name=rsyslog_core_rsyslog --filter status=running -q)
+
+if ! docker -H "ssh://$BROKER" exec "$CONTAINER_ID" rabbitmqctl list_users | grep -q "^$USER\s"; then
+  docker -H "ssh://$BROKER" exec $CONTAINER_ID rabbitmqctl add_user "$USER" "$RABBITMQ_PASSWORD"
+fi
+
+docker -H "ssh://$BROKER" exec $CONTAINER_ID rabbitmqctl set_permissions -p / "$USER" ".*" ".*" ".*"
