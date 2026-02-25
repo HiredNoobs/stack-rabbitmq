@@ -4,6 +4,13 @@
 # Helper functions
 # -----------------------------------------------------
 
+function check_stack_context {
+  if [[ -z "${RABBITMQ_DEFAULT_USER:-}" || -z "${RABBITMQ_DEFAULT_PASS:-}" ]]; then
+    log_error "RabbitMQ default credentials missing from 'secrets.env'."
+    exit 1
+  fi
+}
+
 function build_secrets {
   if [[ ! -f "$SECRETS/ca.crt" || ! -f "$SECRETS/ca.key" ]]; then
     make-ca rabbitmq -o "$SECRETS"
@@ -15,13 +22,24 @@ function build_secrets {
   fi
 }
 
-function check_stack_context {
-  if [[ -z "${RABBITMQ_DEFAULT_USER:-}" || -z "${RABBITMQ_DEFAULT_PASS:-}" ]]; then
-    log_error "RabbitMQ default credentials missing from 'secrets.env'."
-    exit 1
-  fi
+# -----------------------------------------------------
+# Commands
+# -----------------------------------------------------
+
+function command_enable_plugins {
+  discover_stack_context
+  run_enable_plugins
 }
 
+# -----------------------------------------------------
+# RabbitMQ functions
+# -----------------------------------------------------
+
+function run_enable_plugins {
+  local container_id
+  container_id=$(docker -H "ssh://$BROKER" ps --filter "name=${STACK}_broker" --filter status=running -q)
+  docker -H "ssh://$BROKER" exec "$container_id" rabbitmq-plugins enable rabbitmq_prometheus
+}
 
 # -----------------------------------------------------
 # Stack functions
