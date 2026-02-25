@@ -37,6 +37,7 @@ function command_rabbitmq_install_plugins {
 
 function run_rabbitmq_install_plugins {
   local container_id
+
   container_id=$(docker -H "ssh://$BROKER" ps --filter "name=${STACK}_broker" --filter status=running -q)
   docker -H "ssh://$BROKER" exec "$container_id" rabbitmq-plugins enable rabbitmq_prometheus
 }
@@ -85,4 +86,11 @@ function stack_deploy {
   check_stack_context
   build_secrets
   docker stack deploy --detach=true -c rabbitmq.yml "$STACK"
+
+  log_info "Waiting for RabbitMQ to become healthy..."
+  until curl -fsS "$BROKER/api/health/checks/is-in-service" >/dev/null; do
+    sleep 5
+  done
+
+  run_rabbitmq_install_plugins
 }
