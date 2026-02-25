@@ -88,7 +88,7 @@ function stack_deploy {
   docker stack deploy --detach=true -c rabbitmq.yml "$STACK"
 
   log_info "Waiting for RabbitMQ to become healthy..."
-  until curl -fsS "$BROKER/api/health/checks/is-in-service" >/dev/null; do
+  until curl -fsS "https://$BROKER/api/health/checks/is-in-service" >/dev/null 2>&1; do
     sleep 5
   done
 
