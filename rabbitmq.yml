@@ -11,6 +11,10 @@ services:
         published: $RABBITMQ_MANAGEMENT_PORT
         target: $RABBITMQ_MANAGEMENT_PORT
         protocol: tcp
+      - mode: host
+        published: $RABBITMQ_METRICS_PORT
+        target: $RABBITMQ_METRICS_PORT
+        protocol: tcp
     configs:
       - source: rabbitmq_conf
         target: /etc/rabbitmq/rabbitmq.conf
