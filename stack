@@ -26,16 +26,16 @@ function build_secrets {
 # Commands
 # -----------------------------------------------------
 
-function command_enable_plugins {
+function command_rabbitmq_install_plugins {
   discover_stack_context
-  run_enable_plugins
+  run_rabbitmq_install_plugins
 }
 
 # -----------------------------------------------------
 # RabbitMQ functions
 # -----------------------------------------------------
 
-function run_enable_plugins {
+function run_rabbitmq_install_plugins {
   local container_id
   container_id=$(docker -H "ssh://$BROKER" ps --filter "name=${STACK}_broker" --filter status=running -q)
   docker -H "ssh://$BROKER" exec "$container_id" rabbitmq-plugins enable rabbitmq_prometheus
